@@ -24,6 +24,7 @@ start_timer = 5
 # count var
 c = 0
 m = 0
+total = 0
 
 # flags
 
@@ -31,18 +32,26 @@ scrolled = False
 bought_c = False
 bought_m = False
 
+numRefreshes = int(input("How many refreshes (enter 0 for infinite)? "))
 print(f"Running in {start_timer}...")
 wait(start_timer)
+
 # hold down q to end
 while not keyboard.is_pressed('q') or not (buy_covenants and buy_mystics):
 
-    in_shop = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "shop.png"), confidence=.90)
+    if (not numRefreshes == 0) and (total >= numRefreshes):
+        break
+
+    in_shop = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "shop.png"), confidence=.80)
 
     if in_shop:
 
+        if not scrolled:
+            total += 1
+
         # mystic bookmarks
         mystic = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "mystic_icon.png"), confidence=.90)
-
+        
         # covenant bookmarks
         covenant = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "covenant_icon.png"), confidence=.90)
 
@@ -65,6 +74,21 @@ while not keyboard.is_pressed('q') or not (buy_covenants and buy_mystics):
             mystic_confirm_buy_button = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "mystic_buy_button"
                                                                                                    ".png"),
                                                                        confidence=.80)
+            # if we can't find the button, try clicking buy again
+            retries = 0
+            while mystic_confirm_buy_button is None and retries < 3:
+                pyautogui.click(int(mystic_buy_button_x) + button_add_x, int(mystic_buy_button_y) + button_add_y,
+                button='left')
+                wait(1)
+                retries += 1
+                mystic_confirm_buy_button = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "mystic_buy_button"
+                                                                                       ".png"),
+                                                           confidence=.80)
+                
+            # if for some reason the click didn't register (lag, etc), reset the whole loop
+            # if the mystic is still there, we will see it again
+            if mystic_confirm_buy_button is None:
+                continue
 
             pyautogui.click(mystic_confirm_buy_button, button='left')
 
@@ -90,6 +114,21 @@ while not keyboard.is_pressed('q') or not (buy_covenants and buy_mystics):
             covenant_confirm_buy_button = pyautogui.locateCenterOnScreen(
                 os.path.join(images_folder, "covenant_buy_button.png"),
                 confidence=.80)
+                
+            retries = 0
+            while covenant_confirm_buy_button is None and retries < 3:
+                pyautogui.click(int(covenant_buy_button_x) + button_add_x, int(covenant_buy_button_y) + button_add_y,
+                button='left')
+                wait(1)
+                covenant_confirm_buy_button = pyautogui.locateCenterOnScreen(
+                    os.path.join(images_folder, "covenant_buy_button.png"),
+                    confidence=.80)
+                retries += 1
+
+            # if for some reason the click didn't register (lag, etc), reset the whole loop
+            # if the covenant is still there, we will see it again
+            if covenant_confirm_buy_button is None:
+                continue
 
             pyautogui.click(covenant_confirm_buy_button, button='left', clicks=2)
 
@@ -115,20 +154,38 @@ while not keyboard.is_pressed('q') or not (buy_covenants and buy_mystics):
             continue
 
         # refresh
-        print("Refreshing...")
+        print(f"Rrefreshing, Covenants found {c * 5}\nMystics found {m * 50}\nTotal skystones {total * 3}")
+        #print("Refreshing...")
 
         # click refresh button
-        wait(0.5)
+        #wait(0.5)
         pyautogui.click(refresh_button, button='left', clicks=2)
         wait(1)
 
-        # find and click refresh confirm button
+        # find refresh confirm button
         refresh_button_confirm = pyautogui.locateCenterOnScreen(
             os.path.join(images_folder, "confirm_refresh_button.png"),
             confidence=.90)
+        
+        # if we didn't find it, maybe we failed to click the refresh button.
+        # retry clicking the refresh button a few times
+        retries = 0
+        while refresh_button_confirm is None and retries < 3:
+            pyautogui.click(refresh_button, button='left', clicks=2)
+            wait(1)
+            refresh_button_confirm = pyautogui.locateCenterOnScreen(
+            os.path.join(images_folder, "confirm_refresh_button.png"),
+            confidence=.90)
+            retries += 1
+            
+        
         pyautogui.click(refresh_button_confirm, button='left')
 
-        wait(1)
+        wait(0.4)
+     
+        pyautogui.click(refresh_button_confirm, button='left')
+
+        wait(1.5)
 
         # reset flags
         scrolled = False
@@ -142,6 +199,6 @@ while not keyboard.is_pressed('q') or not (buy_covenants and buy_mystics):
 
 # print when loop ends
 if c > 0 or m > 0:
-    print(f"Covenants found {c * 5}\nMystics found {m * 50}")
+    print(f"Covenants found {c * 5}\nMystics found {m * 50}\nTotal skystones {total * 3}")
 
 input("Press Enter to continue...")
