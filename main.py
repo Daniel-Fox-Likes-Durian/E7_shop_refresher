@@ -25,6 +25,7 @@ start_timer = 5
 c = 0
 m = 0
 total = 0
+gold = 464000
 
 # flags
 
@@ -32,14 +33,18 @@ scrolled = False
 bought_c = False
 bought_m = False
 
-numRefreshes = int(input("How many refreshes (enter 0 for infinite)? "))
+numSkystones = int(input("Enter maximum skystones to use (0 for infinite): "))
+maxGold = int(input("Enter maximum gold to use (0 for infinite): "))
 print(f"Running in {start_timer}...")
 wait(start_timer)
 
 # hold down q to end
 while not keyboard.is_pressed('q') or not (buy_covenants and buy_mystics):
 
-    if (not numRefreshes == 0) and (total >= numRefreshes):
+    if (not numSkystones == 0) and (total >= numSkystones):
+        break
+
+    if (not maxGold == 0) and (gold > maxGold):
         break
 
     in_shop = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "shop.png"), confidence=.80)
@@ -47,17 +52,13 @@ while not keyboard.is_pressed('q') or not (buy_covenants and buy_mystics):
     if in_shop:
 
         if not scrolled:
-            total += 1
+            total += 3
 
         # mystic bookmarks
         mystic = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "mystic_icon.png"), confidence=.90)
         
         # covenant bookmarks
         covenant = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "covenant_icon.png"), confidence=.90)
-
-        # refresh button
-        refresh_button = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "refresh_button.png"),
-                                                        confidence=.90)
 
         if mystic and not bought_m and buy_mystics:
             wait(0.5)
@@ -153,8 +154,12 @@ while not keyboard.is_pressed('q') or not (buy_covenants and buy_mystics):
             # search again after scroll
             continue
 
+        # refresh button
+        refresh_button = pyautogui.locateCenterOnScreen(os.path.join(images_folder, "refresh_button.png"),
+                                                        confidence=.90)
+
         # refresh
-        print(f"Rrefreshing, Covenants found {c * 5}\nMystics found {m * 50}\nTotal skystones {total * 3}")
+        print(f"Rrefreshing, Covenants found {c * 5}\nMystics found {m * 50}\nTotal skystones {total}")
         #print("Refreshing...")
 
         # click refresh button
@@ -187,6 +192,12 @@ while not keyboard.is_pressed('q') or not (buy_covenants and buy_mystics):
 
         wait(1.5)
 
+        if bought_c:
+            gold += 184000
+
+        if bought_m:
+            gold += 280000
+
         # reset flags
         scrolled = False
         bought_m = False
@@ -199,6 +210,6 @@ while not keyboard.is_pressed('q') or not (buy_covenants and buy_mystics):
 
 # print when loop ends
 if c > 0 or m > 0:
-    print(f"Covenants found {c * 5}\nMystics found {m * 50}\nTotal skystones {total * 3}")
+    print(f"Covenants found {c * 5}\nMystics found {m * 50}\nTotal skystones {total}")
 
 input("Press Enter to continue...")
